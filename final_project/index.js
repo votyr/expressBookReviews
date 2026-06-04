@@ -9,16 +9,21 @@ const app = express();
 
 app.use(express.json());
 
-app.use("/customer", session({
+/* =========================
+   SESSION (GLOBAL FIX)
+========================= */
+app.use(session({
   secret: "fingerprint_customer",
   resave: true,
   saveUninitialized: true
 }));
 
-// Authentication middleware
-app.use("/customer/auth/*", function auth(req, res, next) {
+/* =========================
+   AUTH MIDDLEWARE
+========================= */
+app.use("/auth/*", function auth(req, res, next) {
 
-  if (!req.session.authorization) {
+  if (!req.session || !req.session.authorization) {
     return res.status(403).json({ message: "User not logged in" });
   }
 
@@ -33,9 +38,14 @@ app.use("/customer/auth/*", function auth(req, res, next) {
   }
 });
 
-const PORT = 5000;
-
-app.use("/customer", customer_routes);
+/* =========================
+   ROUTES
+========================= */
+app.use("/", customer_routes);
 app.use("/", genl_routes);
 
-app.listen(PORT, () => console.log("Server is running"));
+/* =========================
+   START SERVER
+========================= */
+const PORT = 5000;
+app.listen(PORT, () => console.log("Server running on port 5000"));
